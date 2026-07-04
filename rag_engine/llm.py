@@ -15,7 +15,7 @@ class LLMProvider:
 
         self.llm = ChatOllama(
 
-            model="llama3.2",
+            model="gemma3:4b",
 
             temperature=0
         )

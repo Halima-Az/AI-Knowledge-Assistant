@@ -1,9 +1,10 @@
-from rag_engine.loaders.pdf_loader import PDFLoader
+from rag_engine.ingestion.pdf_loader import PDFLoader
 from rag_engine.splitters.text_spliter import TextSplitterService
 from  rag_engine.vector_store import VectorStore
 from rag_engine.retriever import Retriever
 from rag_engine.prompt_builder import PromptBuilder
 from rag_engine.llm import LLMProvider
+from rag_engine.parsers.pdf_parser import PDFParser
 
 
 class RAGPipeline:
@@ -14,6 +15,7 @@ class RAGPipeline:
         self.retriever=Retriever()
         self.prompt=PromptBuilder().get_prompt()
         self.llm=LLMProvider().get_llm()
+        self.pdfParser=PDFParser()
         
     # doc to str
     def _format_context(self, docs):
@@ -25,7 +27,8 @@ class RAGPipeline:
      
     # Indexation : docs -> splitter -> chunks -> embedding -> store in chromaDB   
     def index_documents(self,doc_path):
-        documents=self.loader.load(doc_path)
+        pdf=self.loader.load(doc_path)
+        documents=self.pdfParser.parse(pdf)
         chunks=self.splitter.split(documents)
         self.vectore_store.add_documents(chunks)
         

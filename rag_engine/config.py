@@ -20,3 +20,6 @@ CHROMA_DB_DIRECTORY = "./chroma_db"
 
 # Retriver 
 TOP_K=5
+
+# tesseract path
+TESSERACT_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"

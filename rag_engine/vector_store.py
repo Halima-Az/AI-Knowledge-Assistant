@@ -29,4 +29,6 @@ class VectorStore:
     def as_retriever(self):
         return self.db.as_retriever(
             search_kwargs={"k":TOP_K}
-        )      
+        ) 
+        
+             

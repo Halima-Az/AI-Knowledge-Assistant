@@ -20,7 +20,7 @@ def main():
 
     pipeline = RAGPipeline()
 
-    pdf_path = "documents/RAG_Guide_Complet.pdf"
+    pdf_path = "documents/testpdf.pdf"
 
     print("Indexation en cours...")
 
