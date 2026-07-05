@@ -5,8 +5,9 @@ from rag_engine.retriever import Retriever
 from rag_engine.prompt_builder import PromptBuilder
 from rag_engine.llm import LLMProvider
 from rag_engine.parsers.pdf_parser import PDFParser
-
-
+from rag_engine.models.rag_response import RAGResponse
+from rag_engine.builders.context_builder import ContextBuilder 
+from rag_engine.models.source_reference import SourceReference
 class RAGPipeline:
     def __init__(self):
         self.loader=PDFLoader()
@@ -16,15 +17,8 @@ class RAGPipeline:
         self.prompt=PromptBuilder().get_prompt()
         self.llm=LLMProvider().get_llm()
         self.pdfParser=PDFParser()
-        
-    # doc to str
-    def _format_context(self, docs):
-        return "\n\n----------------------\n\n".join(
-            doc.page_content
-            for doc in docs
-        )
-        
-     
+        self.context_builder=ContextBuilder()
+           
     # Indexation : docs -> splitter -> chunks -> embedding -> store in chromaDB   
     def index_documents(self,doc_path):
         pdf=self.loader.load(doc_path)
@@ -37,7 +31,7 @@ class RAGPipeline:
 
         documents = self.retriever.retrieve(question)
 
-        context = self._format_context(documents)
+        context = self.context_builder.build(documents)
 
         messages = self.prompt.invoke(
             {
@@ -47,7 +41,27 @@ class RAGPipeline:
         )
 
         response = self.llm.invoke(messages)
+        
+        sources = []
+        seen = set()
 
-        return response.content     
+        for doc in documents:
+
+            ref = SourceReference(
+                source=doc.metadata.get("source", "Unknown"),
+                page=doc.metadata.get("page", -1),
+                content_type=doc.metadata.get("content_type", "text"),
+            )
+
+            key = (ref.source, ref.page, ref.content_type)
+
+            if key not in seen:
+                seen.add(key)
+                sources.append(ref)
+
+        return RAGResponse(
+            answer=response.content,
+            sources=sources
+        )   
             
         

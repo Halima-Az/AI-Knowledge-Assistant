@@ -35,11 +35,14 @@ def main():
         if question.lower() == "exit":
             break
 
-        answer = pipeline.ask(question)
+        response = pipeline.ask(question)
 
         print("\nRéponse :")
-        print(answer)
-        print()
+        print(response.answer)
+        print("\n Sources : \n")
+        for source in response.sources:
+            print(f"- page {source.page} |"
+                f"Source : {source.content_type}")
 
 
 if __name__ == "__main__":
