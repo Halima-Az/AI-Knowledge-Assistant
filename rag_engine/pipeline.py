@@ -1,23 +1,16 @@
-from rag_engine.ingestion.pdf_loader import PDFLoader
-from rag_engine.splitters.text_spliter import TextSplitterService
-from  rag_engine.vector_store import VectorStore
-from rag_engine.retriever import Retriever
-from rag_engine.prompt_builder import PromptBuilder
-from rag_engine.llm import LLMProvider
-from rag_engine.parsers.pdf_parser import PDFParser
 from rag_engine.models.rag_response import RAGResponse
-from rag_engine.builders.context_builder import ContextBuilder 
-from rag_engine.models.source_reference import SourceReference
+
 class RAGPipeline:
-    def __init__(self):
-        self.loader=PDFLoader()
-        self.splitter=TextSplitterService()
-        self.vectore_store=VectorStore()
-        self.retriever=Retriever()
-        self.prompt=PromptBuilder().get_prompt()
-        self.llm=LLMProvider().get_llm()
-        self.pdfParser=PDFParser()
-        self.context_builder=ContextBuilder()
+    def __init__(self,loader,parser,splitter,vectore_store,retriever,prompt,llm,context_builder,source_builder):
+        self.loader=loader 
+        self.pdfParser=parser
+        self.splitter=splitter
+        self.vectore_store=vectore_store
+        self.retriever=retriever
+        self.prompt=prompt
+        self.llm=llm
+        self.context_builder=context_builder
+        self.source_builder=source_builder
            
     # Indexation : docs -> splitter -> chunks -> embedding -> store in chromaDB   
     def index_documents(self,doc_path):
@@ -42,23 +35,8 @@ class RAGPipeline:
 
         response = self.llm.invoke(messages)
         
-        sources = []
-        seen = set()
-
-        for doc in documents:
-
-            ref = SourceReference(
-                source=doc.metadata.get("source", "Unknown"),
-                page=doc.metadata.get("page", -1),
-                content_type=doc.metadata.get("content_type", "text"),
-            )
-
-            key = (ref.source, ref.page, ref.content_type)
-
-            if key not in seen:
-                seen.add(key)
-                sources.append(ref)
-
+        sources = self.source_builder.build(documents)
+        
         return RAGResponse(
             answer=response.content,
             sources=sources

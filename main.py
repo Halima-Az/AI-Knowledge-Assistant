@@ -1,5 +1,6 @@
 
 from rag_engine.pipeline import RAGPipeline
+from rag_engine.container.service_container import ServiceContainer
 """
 from rag_engine.loaders.pdf_loader import PDFLoader
 
@@ -18,8 +19,9 @@ print(f"Nombre de chunks : {len(chunks)}")
 """
 def main():
 
-    pipeline = RAGPipeline()
-
+    container=ServiceContainer()
+    pipeline= container.create_pipeline()
+    
     pdf_path = "documents/testpdf.pdf"
 
     print("Indexation en cours...")
